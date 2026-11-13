@@ -63,7 +63,7 @@
         if (delta / max < 0.22) { votes[6]++; continue; }
         let hue = max === r ? (g - b) / delta : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
         hue = (hue * 60 + 360) % 360;
-        const color = hue < 18 || hue >= 345 ? 1 : hue < 75 ? 4 : hue < 170 ? 2 : hue < 255 ? 3 : 5;
+        const color = hue < 18 || hue >= 345 ? 1 : hue < 75 ? 4 : hue < 170 ? 2 : hue < 245 ? 3 : 5;
         votes[color]++;
       }
     }
@@ -105,6 +105,7 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
 
 
 
