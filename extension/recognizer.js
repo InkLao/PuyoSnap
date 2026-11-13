@@ -47,6 +47,37 @@
       if (y + height > h + 2) continue;
       return {x: left + span * 0.0175, y, width, height};
     }
+    // Recover the grid from uninterrupted side borders when effects cover the top.
+    const coverage = [];
+    const start = Math.floor(h * 0.3), end = Math.floor(h * 0.9);
+    for (let x = 0; x < w; x++) {
+      let count = 0;
+      for (let y = start; y < end; y++) {
+        const i = (y * w + x) * 4;
+        if (data[i + 3] > 200 && (data[i] + data[i + 1] + data[i + 2]) / 3 < 70) count++;
+      }
+      coverage[x] = count / (end - start);
+    }
+    const edgeGap = Math.max(2, Math.round(w * 0.02));
+    let left = -1, right = -1;
+    for (let x = edgeGap; x < w * 0.15; x++)
+      if (coverage[x] >= 0.9 && coverage[x - edgeGap] < 0.5) { left = x; break; }
+    for (let x = w - 1 - edgeGap; x > w * 0.85; x--)
+      if (coverage[x] >= 0.9 && coverage[x + edgeGap] < 0.5) { right = x; break; }
+    if (left >= 0 && right - left >= w * 0.8) {
+      const span = right - left + 1, width = span * 0.965, height = width * 1.875;
+      let bottom = -1, bestDark = 0.65;
+      for (let y = Math.max(Math.floor(h * 0.8), Math.ceil(height)); y < h; y++) {
+        let count = 0;
+        for (let x = left; x <= right; x++) {
+          const i = (y * w + x) * 4;
+          if (data[i + 3] > 200 && (data[i] + data[i + 1] + data[i + 2]) / 3 < 70) count++;
+        }
+        if (count / span > bestDark) { bestDark = count / span; bottom = y; }
+      }
+      if (bottom >= height && bottom - height < h * 0.2)
+        return {x: left + span * 0.0175, y: bottom - height, width, height, inferredTop: true};
+    }
     throw new Error("No pude localizar el marco. Incluye los bordes y las 12 filas del tablero.");
   }
   function classify(image, cx, cy, cw, ch) {
@@ -105,6 +136,7 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
 
 
 
