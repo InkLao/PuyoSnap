@@ -9,7 +9,7 @@
       let left = -1, right = -1, count = 0;
       for (let x = 0; x < w; x++) {
         const i = (y * w + x) * 4;
-        if (Math.max(data[i], data[i + 1], data[i + 2]) < 85 && data[i + 3] > 200) {
+        if ((data[i] + data[i + 1] + data[i + 2]) / 3 < 70 && data[i + 3] > 200) {
           if (left < 0) left = x;
           right = x; count++;
         }
@@ -18,7 +18,7 @@
       // shortcut: Champions default frame and cell proportions; recalibrate for other skins/layouts.
       const dark = x => {
         const i = (y * w + x) * 4;
-        return Math.max(data[i], data[i + 1], data[i + 2]) < 85;
+        return (data[i] + data[i + 1] + data[i + 2]) / 3 < 70;
       };
       left = Math.floor(w * 0.1); right = Math.floor(w * 0.9);
       if (!dark(left) || !dark(right)) continue;
@@ -26,7 +26,21 @@
       while (right < w - 1 && dark(right + 1)) right++;
       const span = right - left + 1;
       const width = span * 0.965;
-      const height = width * 1.875;
+      let height = width * 1.875;
+      // Use the lower frame when visible; rounding the width can shift small screenshots by a cell.
+      let bestDark = 0.65;
+      const bottomLimit = Math.min(h, y + height * 1.05);
+      for (let bottom = Math.floor(y + height * 0.95); bottom < bottomLimit; bottom++) {
+        let darkCount = 0;
+        for (let x = left; x <= right; x++) {
+          const i = (bottom * w + x) * 4;
+          if ((data[i] + data[i + 1] + data[i + 2]) / 3 < 70) darkCount++;
+        }
+        if (darkCount / span > bestDark) {
+          bestDark = darkCount / span;
+          height = bottom - y;
+        }
+      }
       if (y + height > h + 2) continue;
       return {x: left + span * 0.0175, y, width, height};
     }
@@ -53,6 +67,9 @@
     let color = 1;
     for (let c = 2; c <= 5; c++) if (votes[c] > votes[color]) color = c;
     if (votes[color] / total >= 0.28) return color;
+    // Large white eyes can dominate a colored Puyo; garbage still lacks a substantial color vote.
+    if (votes[color] / total >= 0.18 && votes[6] / total >= 0.25 &&
+        (votes[color] + votes[6]) / total >= 0.5) return color;
     return votes[6] / total >= 0.25 ? 6 : 0;
   }
   function recognize(image) {
@@ -85,4 +102,6 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
+
 
