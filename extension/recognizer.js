@@ -41,6 +41,9 @@
           height = bottom - y;
         }
       }
+      // shortcut: a tight full-board crop can omit the lower frame; partial boards need explicit cropping.
+      if (bestDark === 0.65 && Math.abs((h - y) / height - 1) <= 0.03)
+        height = h - y;
       if (y + height > h + 2) continue;
       return {x: left + span * 0.0175, y, width, height};
     }
@@ -102,6 +105,7 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
 
 
 
