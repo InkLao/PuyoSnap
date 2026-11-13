@@ -1,0 +1,37 @@
+# Captura Puyo → Nexus
+
+Prototipo para Google Chrome, Puyo Champions y el aspecto visual de las cinco capturas proporcionadas.
+
+## Instalar
+1. Abre chrome://extensions en Chrome.
+2. Activa **Modo de desarrollador**.
+3. Pulsa **Cargar descomprimida** y selecciona la carpeta **extension** de este proyecto.
+4. Abre https://puyonexus.com/chainsim/ o recarga la pestaña si ya estaba abierta.
+
+## Usar
+1. Pausa el VOD en un estado estable.
+2. Captura un único tablero completo: incluye su marco superior y lateral y las 12 filas visibles. Puede incluir el marcador inferior, como las muestras.
+3. Haz clic en el área de pegado del panel **Captura Puyo → Nexus** y pulsa **Ctrl+V**. También puedes seleccionar un archivo.
+4. Pulsa **Cargar en Nexus**. Se abre una pestaña nueva con el tablero editable.
+5. Corrige allí cualquier error y agrega manualmente los Puyos ocultos que conozcas.
+
+El título del panel permite plegarlo. La extensión solo se ejecuta en el simulador de Nexus; no pide acceso general a tus pestañas ni permiso para leer el portapapeles en segundo plano.
+
+## Alcance y límites
+- Reconoce rojo, verde, azul, amarillo, morado, basura y espacios vacíos.
+- No incluye editor, piezas siguientes ni reconstrucción de filas ocultas.
+- El detector está calibrado para el marco y las proporciones de Champions de estas muestras. Evita recortes sin marco, tableros deformados, capturas de pantalla completas y otros aspectos visuales.
+- Ignora piezas separadas del suelo por una celda vacía. Una pieza activa que visualmente toque la pila puede ser indistinguible de una colocada.
+- Un error de reconocimiento de vacío puede eliminar las piezas que haya encima en esa columna: revisa el resultado en Nexus.
+- No hay una garantía de exactitud para otras capturas: estas cinco imágenes sirven tanto para calibración como para regresión, no como evaluación independiente.
+- Las imágenes se procesan localmente. Al abrir el resultado, Nexus recibe los colores y posiciones codificados en la URL; no recibe la captura.
+- No modifica el tablero anterior ni publica cadenas a través de la API de compartir.
+
+## Integración verificada
+El parámetro legacy **chain** de PuyoSim usa la tabla **0475681** para los tipos internos 0–6. El tablero se escribe por filas de arriba abajo; Nexus completa las celdas ocultas con vacíos.
+
+Referencias del proyecto original:
+- https://github.com/puyonexus/puyosim/blob/master/src/Service/LegacyChainParser.php
+- https://github.com/puyonexus/puyosim/blob/master/src/Controller/HomeController.php
+
+Las capturas en tests/fixtures son material de prueba aportado por el usuario y no forman parte de la carpeta que se instala como extensión.

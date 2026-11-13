@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Captura Puyo → Nexus",
+  "version": "0.1.0",
+  "description": "Importa capturas de Puyo Champions al simulador de Puyo Nexus.",
+  "content_scripts": [{
+    "matches": ["https://puyonexus.com/chainsim/*"],
+    "js": ["recognizer.js", "panel.js"]
+  }]
+}

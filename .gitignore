@@ -1,0 +1,5 @@
+tests/chrome*-profile/
+tests/result.html
+tests/panel-result.html
+tests/chrome.log
+/tests/
