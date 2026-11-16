@@ -106,8 +106,9 @@
     if (votes[color] / total >= 0.28 ||
         (votes[color] / total >= 0.18 && (votes[color] + shadows[color]) / total >= 0.38)) return color;
     // Large white eyes can dominate a colored Puyo; garbage still lacks a substantial color vote.
-    if (votes[color] / total >= 0.18 && votes[6] / total >= 0.25 &&
-        (votes[color] + votes[6]) / total >= 0.5) return color;
+    if (votes[6] / total >= 0.25 &&
+        ((votes[color] / total >= 0.18 && (votes[color] + votes[6]) / total >= 0.5) ||
+         (votes[color] / total >= 0.12 && (votes[color] + shadows[color]) / total >= 0.25))) return color;
     return votes[6] / total >= 0.25 ? 6 : 0;
   }
   function recognize(image) {
@@ -140,6 +141,9 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
+
+
 
 
 
