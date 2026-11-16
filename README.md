@@ -44,3 +44,6 @@ En este caso, el panel muestra **Marco superior estimado por los laterales**. Re
 Se requieren laterales y borde inferior suficientemente visibles. Si tampoco se detectan, se mantiene el error en lugar de aceptar una cuadrícula sin referencias.
 
 La prueba **tests/overlay.test.html** comprueba la ubicación del marco en la captura real con animación y las 48 celdas inferiores de dos tableros conocidos con la zona superior tapada artificialmente. No afirma exactitud de colores en la captura con animación. Se incluye en **node tests/run-browser.cjs**.
+
+### Skin con rojos rosados
+La clasificación incluye rojos con tono cercano al magenta (desde 325°). La captura con animación ahora tiene comprobaciones de 70 celdas, incluidos los dos morados reales de la quinta columna. El amarillo y el verde superiores de la segunda columna siguen sin recuperarse de forma fiable bajo el efecto: se deben corregir manualmente en Nexus. Las pruebas no los cuentan como aciertos.

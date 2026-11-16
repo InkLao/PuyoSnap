@@ -82,6 +82,7 @@
   }
   function classify(image, cx, cy, cw, ch) {
     const votes = [0, 0, 0, 0, 0, 0, 0];
+    const shadows = [0, 0, 0, 0, 0, 0, 0];
     let total = 0;
     for (let y = Math.ceil(cy - ch * 0.43); y < cy + ch * 0.43; y++) {
       for (let x = Math.ceil(cx - cw * 0.43); x < cx + cw * 0.43; x++) {
@@ -90,17 +91,20 @@
         const [r, g, b] = image.data.slice(i, i + 3);
         total++;
         const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
-        if (max < 145) continue;
+        if (max < 100 || (max < 145 && delta / max < 0.6)) continue;
         if (delta / max < 0.22) { votes[6]++; continue; }
         let hue = max === r ? (g - b) / delta : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
         hue = (hue * 60 + 360) % 360;
-        const color = hue < 18 || hue >= 345 ? 1 : hue < 75 ? 4 : hue < 170 ? 2 : hue < 245 ? 3 : 5;
-        votes[color]++;
+        const color = hue < 18 || hue >= 325 ? 1 : hue < 75 ? 4 : hue < 170 ? 2 : hue < 245 ? 3 : 5;
+        if (max < 145) shadows[color]++;
+        else votes[color]++;
       }
     }
     let color = 1;
     for (let c = 2; c <= 5; c++) if (votes[c] > votes[color]) color = c;
-    if (votes[color] / total >= 0.28) return color;
+    // Saturated shadows support a color only when enough bright pixels already identify it.
+    if (votes[color] / total >= 0.28 ||
+        (votes[color] / total >= 0.18 && (votes[color] + shadows[color]) / total >= 0.38)) return color;
     // Large white eyes can dominate a colored Puyo; garbage still lacks a substantial color vote.
     if (votes[color] / total >= 0.18 && votes[6] / total >= 0.25 &&
         (votes[color] + votes[6]) / total >= 0.5) return color;
@@ -136,6 +140,10 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
+
+
+
 
 
 
