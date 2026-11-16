@@ -78,12 +78,42 @@
       if (bottom >= height && bottom - height < h * 0.2)
         return {x: left + span * 0.0175, y: bottom - height, width, height, inferredTop: true};
     }
+    // shortcut: dense brick boards expose their bounds through color; sparse boards need visible frame edges.
+    const mask = new Uint8Array(w * h), columns = new Uint32Array(w), rows = new Uint32Array(h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2];
+      const high = Math.max(r, g, b), low = Math.min(r, g, b);
+      // Exclude the cyan outer frame, which is outside the playable rectangle.
+      if (data[i + 3] > 200 && high >= 140 && (high - low) / high >= 0.45 &&
+          !(b > r && g > r && g / b > 0.65)) {
+        mask[y * w + x] = 1; columns[x]++; rows[y]++;
+      }
+    }
+    const xs = [], ys = [];
+    for (let x = 0; x < w; x++) if (columns[x] >= h * 0.3) xs.push(x);
+    for (let y = 0; y < h; y++) if (rows[y] >= w * 0.3) ys.push(y);
+    if (xs.length && ys.length) {
+      const x = xs[0], y = ys[0], width = xs.at(-1) - x + 1, height = ys.at(-1) - y + 1;
+      if (width >= w * 0.8 && height >= h * 0.8 && height / width >= 1.75 && height / width <= 1.95) {
+        let rectangles = 0;
+        const colors = new Set();
+        for (let row = 0; row < 12; row++) for (let col = 0; col < 6; col++) {
+          let corners = 0;
+          for (const dx of [0.12, 0.88]) for (const dy of [0.12, 0.88])
+            corners += mask[Math.floor(y + (row + dy) * height / 12) * w + Math.floor(x + (col + dx) * width / 6)];
+          const color = classify(image, x + (col + 0.5) * width / 6, y + (row + 0.5) * height / 12, width / 6, height / 12);
+          if (color > 0 && color < 6 && corners >= 3) { rectangles++; colors.add(color); }
+        }
+        if (rectangles >= 12 && colors.size >= 3)
+          return {x, y, width, height, blockSkin: true};
+      }
+    }
     throw new Error("No pude localizar el marco. Incluye los bordes y las 12 filas del tablero.");
   }
-  function classify(image, cx, cy, cw, ch) {
+  function classify(image, cx, cy, cw, ch, blockSkin = false) {
     const votes = [0, 0, 0, 0, 0, 0, 0];
     const shadows = [0, 0, 0, 0, 0, 0, 0];
-    let total = 0;
+    let total = 0, darkNeutral = 0;
     for (let y = Math.ceil(cy - ch * 0.43); y < cy + ch * 0.43; y++) {
       for (let x = Math.ceil(cx - cw * 0.43); x < cx + cw * 0.43; x++) {
         if (x < 0 || y < 0 || x >= image.width || y >= image.height) continue;
@@ -91,6 +121,7 @@
         const [r, g, b] = image.data.slice(i, i + 3);
         total++;
         const max = Math.max(r, g, b), min = Math.min(r, g, b), delta = max - min;
+        if (max >= 40 && max < 145 && delta / max < 0.1) darkNeutral++;
         if (max < 100 || (max < 145 && delta / max < 0.6)) continue;
         if (delta / max < 0.22) { votes[6]++; continue; }
         let hue = max === r ? (g - b) / delta : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
@@ -109,7 +140,7 @@
     if (votes[6] / total >= 0.25 &&
         ((votes[color] / total >= 0.18 && (votes[color] + votes[6]) / total >= 0.5) ||
          (votes[color] / total >= 0.12 && (votes[color] + shadows[color]) / total >= 0.25))) return color;
-    return votes[6] / total >= 0.25 ? 6 : 0;
+    return votes[6] / total >= 0.25 || (blockSkin && darkNeutral / total >= 0.55) ? 6 : 0;
   }
   function recognize(image) {
     if (!image || image.data?.length !== image.width * image.height * 4)
@@ -118,7 +149,7 @@
     const cells = [];
     for (let row = 0; row < 12; row++)
       for (let col = 0; col < 6; col++)
-        cells.push(classify(image, box.x + (col + 0.5) * cw, box.y + (row + 0.5) * ch, cw, ch));
+        cells.push(classify(image, box.x + (col + 0.5) * cw, box.y + (row + 0.5) * ch, cw, ch, box.blockSkin));
     // Only grounded pieces belong to the stable board; ignore the falling pair and top markers.
     for (let col = 0; col < 6; col++) {
       let gap = false;
@@ -141,6 +172,8 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
+
 
 
 

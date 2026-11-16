@@ -47,3 +47,10 @@ La prueba **tests/overlay.test.html** comprueba la ubicación del marco en la ca
 
 ### Skin con rojos rosados
 La clasificación incluye rojos con tono cercano al magenta (desde 325°). La captura con animación ahora tiene comprobaciones de 70 celdas, incluidos los dos morados reales de la quinta columna. El amarillo y el verde superiores de la segunda columna siguen sin recuperarse de forma fiable bajo el efecto: se deben corregir manualmente en Nexus. Las pruebas no los cuentan como aciertos.
+
+## Skin de bloques
+Cuando no se puede localizar el marco, se busca como última alternativa una región de bloques rectangulares de colores con proporciones de tablero. Se exige evidencia de varias celdas y al menos tres colores; no basta con una imagen de color sólido.
+
+La basura gris oscura se interpreta como basura únicamente en esta alternativa. La captura aportada se comprueba en tamaño original, al 75 % y al 50 %, también con recortes inferiores pequeños.
+
+Limitación: esta detección necesita suficiente tablero ocupado para estimar sus límites. No implica compatibilidad general con tableros de bloques vacíos, poco llenos o recortados. Revisa el resultado en Nexus.
