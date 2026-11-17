@@ -56,10 +56,10 @@
       canvas.height = Math.round(bitmap.height * scale);
       const ctx = canvas.getContext("2d", {willReadFrequently: true});
       ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-      const {cells} = PuyoCapture.recognize(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      const {cells, box} = PuyoCapture.recognize(ctx.getImageData(0, 0, canvas.width, canvas.height));
       link.href = PuyoCapture.nexusUrl(cells);
       link.hidden = false;
-      status.textContent = cells.filter(Boolean).length + " Puyos detectados. Abre el resultado y corrige allí lo necesario.";
+      status.textContent = cells.filter(Boolean).length + " Puyos detectados. " + (box.inferredTop ? "Marco superior estimado por los laterales. Revisa en Nexus las piezas cubiertas por efectos." : "Abre el resultado y corrige allí lo necesario.");
     } catch (error) {
       if (current === request) status.textContent = error.message || "No pude leer la imagen. Prueba otra captura.";
     } finally {
@@ -77,3 +77,4 @@
     fileInput.value = "";
   });
 })();
+

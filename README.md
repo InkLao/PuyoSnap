@@ -35,3 +35,22 @@ Referencias del proyecto original:
 - https://github.com/puyonexus/puyosim/blob/master/src/Controller/HomeController.php
 
 Las capturas en tests/fixtures son material de prueba aportado por el usuario y no forman parte de la carpeta que se instala como extensión.
+
+## Marco superior cubierto
+Si no se detecta la franja superior, la extensión intenta localizar dos bordes laterales oscuros y continuos, con contraste hacia el exterior, y el borde inferior. Estima la altura con las proporciones del tablero de Champions.
+
+En este caso, el panel muestra **Marco superior estimado por los laterales**. Revisa en Nexus las piezas cubiertas por efectos: este método recupera la cuadrícula, no el color original de las piezas tapadas. Algunas skins también pueden necesitar ajustes de color.
+
+Se requieren laterales y borde inferior suficientemente visibles. Si tampoco se detectan, se mantiene el error en lugar de aceptar una cuadrícula sin referencias.
+
+La prueba **tests/overlay.test.html** comprueba la ubicación del marco en la captura real con animación y las 48 celdas inferiores de dos tableros conocidos con la zona superior tapada artificialmente. No afirma exactitud de colores en la captura con animación. Se incluye en **node tests/run-browser.cjs**.
+
+### Skin con rojos rosados
+La clasificación incluye rojos con tono cercano al magenta (desde 325°). La captura con animación ahora tiene comprobaciones de 70 celdas, incluidos los dos morados reales de la quinta columna. El amarillo y el verde superiores de la segunda columna siguen sin recuperarse de forma fiable bajo el efecto: se deben corregir manualmente en Nexus. Las pruebas no los cuentan como aciertos.
+
+## Skin de bloques
+Cuando no se puede localizar el marco, se busca como última alternativa una región de bloques rectangulares de colores con proporciones de tablero. Se exige evidencia de varias celdas y al menos tres colores; no basta con una imagen de color sólido.
+
+La basura gris oscura se interpreta como basura únicamente en esta alternativa. La captura aportada se comprueba en tamaño original, al 75 % y al 50 %, también con recortes inferiores pequeños.
+
+Limitación: esta detección necesita suficiente tablero ocupado para estimar sus límites. No implica compatibilidad general con tableros de bloques vacíos, poco llenos o recortados. Revisa el resultado en Nexus.
