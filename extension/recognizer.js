@@ -41,9 +41,20 @@
           height = bottom - y;
         }
       }
-      // shortcut: a tight full-board crop can omit the lower frame; partial boards need explicit cropping.
-      if (bestDark === 0.65 && Math.abs((h - y) / height - 1) <= 0.03)
-        height = h - y;
+      // A tight crop must end on colored content; a score below the board is not its lower edge.
+      if (bestDark === 0.65 && Math.abs((h - y) / height - 1) <= 0.03) {
+        let colored = 0, samples = 0;
+        for (let edgeY = h - Math.max(1, Math.round(height / 60)); edgeY < h; edgeY++)
+          for (let edgeX = Math.ceil(left + span * 0.0175); edgeX < left + span * 0.9825; edgeX++) {
+            const i = (edgeY * w + edgeX) * 4;
+            const high = Math.max(data[i], data[i + 1], data[i + 2]);
+            const low = Math.min(data[i], data[i + 1], data[i + 2]);
+            if (data[i + 3] > 200 && high >= 140 && (high - low) / high >= 0.45 &&
+                !(data[i + 2] > data[i + 1] && data[i + 1] > data[i] && data[i + 1] / data[i + 2] > 0.65)) colored++;
+            samples++;
+          }
+        if (colored / samples >= 0.2) height = h - y;
+      }
       if (y + height > h + 2) continue;
       return {x: left + span * 0.0175, y, width, height};
     }
@@ -172,6 +183,10 @@
   if (typeof module !== "undefined") module.exports = api;
   else root.PuyoCapture = api;
 })(globalThis);
+
+
+
+
 
 
 
